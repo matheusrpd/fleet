@@ -1,6 +1,7 @@
 import { Text, TouchableOpacity, View } from 'react-native'
 import { Image } from 'expo-image'
 import { useUser, useApp } from '@realm/react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Power } from 'phosphor-react-native'
 
 import colors from 'tailwindcss/colors'
@@ -9,12 +10,19 @@ export function HomeHeader() {
   const user = useUser()
   const app = useApp()
 
+  const { top } = useSafeAreaInsets()
+
   function handleLogout() {
     app.currentUser?.logOut()
   }
 
+  const paddingTop = top + 32
+
   return (
-    <View className="w-full flex-row items-center bg-gray-700 p-8">
+    <View
+      className="w-full flex-row items-center bg-gray-700 p-8"
+      style={{ paddingTop }}
+    >
       <Image
         source={{ uri: user?.profile.pictureUrl }}
         className="h-14 w-14 rounded-md"
