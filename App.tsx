@@ -9,6 +9,8 @@ import {
 
 import { REALM_APP_ID } from '@env'
 
+import { RealmProvider } from './src/libs/realm'
+
 import { Loading } from './src/components/Loading'
 import { SignIn } from './src/screens/SignIn'
 import { Routes } from './src/routes'
@@ -25,14 +27,16 @@ export default function App() {
 
   return (
     <AppProvider id={REALM_APP_ID}>
-      <SafeAreaProvider>
+      <SafeAreaProvider className="flex-1 bg-gray-800">
         <StatusBar
           barStyle="light-content"
           backgroundColor="transparent"
           translucent
         />
         <UserProvider fallback={SignIn}>
-          <Routes />
+          <RealmProvider>
+            <Routes />
+          </RealmProvider>
         </UserProvider>
       </SafeAreaProvider>
     </AppProvider>
