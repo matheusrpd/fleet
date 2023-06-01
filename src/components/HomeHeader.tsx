@@ -4,7 +4,7 @@ import { useUser, useApp } from '@realm/react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Power } from 'phosphor-react-native'
 
-import colors from 'tailwindcss/colors'
+import colors from '../theme/colors'
 
 export function HomeHeader() {
   const user = useUser()
@@ -30,7 +30,7 @@ export function HomeHeader() {
       />
 
       <View className="ml-3 flex-1">
-        <Text className="font-sans text-md text-gray-100">Olá,</Text>
+        <Text className="font-sans text-sm text-gray-100">Olá,</Text>
         <Text className="font-title text-lg text-gray-100">
           {user?.profile.name}
         </Text>

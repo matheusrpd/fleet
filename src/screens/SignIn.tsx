@@ -67,7 +67,7 @@ export function SignIn() {
           Ignite Fleet
         </Text>
 
-        <Text className="mb-8 text-center font-sans text-md text-gray-100">
+        <Text className="mb-8 text-center font-sans text-base text-gray-100">
           Gestão de uso de veículos
         </Text>
 
