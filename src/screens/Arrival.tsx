@@ -60,9 +60,11 @@ export function Arrival() {
     }
   }
 
+  const title = historic?.status === 'departure' ? 'Chegada' : 'Detalhes'
+
   return (
     <View className="flex-1 bg-gray-800">
-      <Header title="Chegada" />
+      <Header title={title} />
 
       <View className="flex-grow p-8">
         <Text className="mb-1 mt-8 font-sans text-sm text-gray-300">
@@ -79,10 +81,12 @@ export function Arrival() {
           {historic?.description}
         </Text>
 
-        <View className="mt-auto w-full flex-row" style={{ gap: 16 }}>
-          <ButtonIcon icon={X} onPress={handleRemoveVehicleUsage} />
-          <Button title="Registrar chegada" onPress={handleArrivalRegister} />
-        </View>
+        {historic?.status === 'departure' ? (
+          <View className="mt-auto w-full flex-row" style={{ gap: 16 }}>
+            <ButtonIcon icon={X} onPress={handleRemoveVehicleUsage} />
+            <Button title="Registrar chegada" onPress={handleArrivalRegister} />
+          </View>
+        ) : null}
       </View>
     </View>
   )
