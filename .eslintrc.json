@@ -3,5 +3,8 @@
   "rules": {
     "camelcase": "off",
     "jsx-a11y/alt-text": "off"
+  },
+  "globals": {
+    "JSX": true
   }
 }

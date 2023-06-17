@@ -13,7 +13,7 @@ interface CarStatusProps extends TouchableOpacityProps {
 }
 
 export function CarStatus({ licensePlate, ...rest }: CarStatusProps) {
-  const Icon = licensePlate ? Key : Car
+  const Icon = licensePlate ? Car : Key
 
   const message = licensePlate
     ? `Veículo ${licensePlate} em uso. `
