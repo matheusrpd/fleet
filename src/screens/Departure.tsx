@@ -1,12 +1,6 @@
 import { useRef, useState } from 'react'
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TextInput,
-  View,
-} from 'react-native'
+import { Alert, ScrollView, TextInput, View } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useUser } from '@realm/react'
 import { useNavigation } from '@react-navigation/native'
 
@@ -18,9 +12,6 @@ import { Button } from '../components/Button'
 import { licensePlateValidade } from '../utils/licensePlateValidate'
 import { useRealm } from '../libs/realm'
 import { Historic } from '../libs/realm/Historic'
-
-const keyboardAvoidingViewBehavior =
-  Platform.OS === 'android' ? 'height' : 'position'
 
 export function Departure() {
   const { goBack } = useNavigation()
@@ -82,10 +73,7 @@ export function Departure() {
     <View className="flex-1 bg-gray-800">
       <Header title="Saída" />
 
-      <KeyboardAvoidingView
-        behavior={keyboardAvoidingViewBehavior}
-        className="flex-1"
-      >
+      <KeyboardAwareScrollView>
         <ScrollView>
           <View className="flex-1 p-8 pt-12" style={{ gap: 16 }}>
             <LicensePlateInput
@@ -114,7 +102,7 @@ export function Departure() {
             />
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     </View>
   )
 }
