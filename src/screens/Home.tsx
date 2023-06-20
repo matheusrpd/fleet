@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, FlatList, Text, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { useUser } from '@realm/react'
+import { Realm, useUser } from '@realm/react'
 import dayjs from 'dayjs'
 
 import { HomeHeader } from '../components/HomeHeader'
 import { CarStatus } from '../components/CarStatus'
 import { HistoricCard, HistoricCardProps } from '../components/HistoricCard'
 
+import {
+  getLastAsyncTimestamp,
+  saveLastSyncTimestamp,
+} from '../libs/asyncStorage/syncStorage'
 import { useQuery, useRealm } from '../libs/realm'
 import { Historic } from '../libs/realm/Historic'
 
@@ -38,17 +42,19 @@ export function Home() {
     }
   }, [historic])
 
-  const fetchHistoric = useCallback(() => {
+  const fetchHistoric = useCallback(async () => {
     try {
       const historicResponse = historic.filtered(
         "status = 'arrival' SORT(created_at DESC)",
       )
 
+      const lastSync = await getLastAsyncTimestamp()
+
       const formattedHistoric = historicResponse.map((item) => ({
         id: String(item._id),
         licensePlate: item.license_plate,
         createdAt: formatDate(item.created_at),
-        isSync: false,
+        isSync: lastSync > item.updated_at.getTime(),
       }))
 
       setVehicleHistoric(formattedHistoric)
@@ -58,6 +64,18 @@ export function Home() {
       Alert.alert('Histórico', 'Não foi possível carregar o histórico de uso.')
     }
   }, [historic])
+
+  const progressNotification = useCallback(
+    async (transferred: number, transferable: number) => {
+      const percentage = (transferred / transferable) * 100
+
+      if (percentage === 100) {
+        await saveLastSyncTimestamp()
+        await fetchHistoric()
+      }
+    },
+    [fetchHistoric],
+  )
 
   useEffect(() => {
     fetchVehicleInUse()
@@ -83,6 +101,22 @@ export function Home() {
       mutableSubs.add(historicByUserQuery, { name: 'historic_by_user' })
     })
   }, [realm, user])
+
+  useEffect(() => {
+    const syncSession = realm.syncSession
+
+    if (!syncSession) {
+      return
+    }
+
+    syncSession.addProgressNotification(
+      Realm.ProgressDirection.Upload,
+      Realm.ProgressMode.ReportIndefinitely,
+      progressNotification,
+    )
+
+    return () => syncSession.removeProgressNotification(progressNotification)
+  }, [realm, progressNotification])
 
   function handleRegisterMovement() {
     if (!vehicleInUse) {
