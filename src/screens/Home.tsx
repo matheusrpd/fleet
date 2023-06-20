@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, FlatList, Text, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+import { useUser } from '@realm/react'
 import dayjs from 'dayjs'
 
 import { HomeHeader } from '../components/HomeHeader'
@@ -15,6 +16,7 @@ export function Home() {
 
   const historic = useQuery(Historic)
   const realm = useRealm()
+  const user = useUser()
 
   const [vehicleInUse, setVehicleInUse] = useState<Historic | null>(null)
   const [vehicleHistoric, setVehicleHistoric] = useState<
@@ -66,9 +68,21 @@ export function Home() {
     realm.addListener('change', () => fetchVehicleInUse())
 
     return () => {
-      realm.removeListener('change', fetchVehicleInUse)
+      if (realm && !realm.isClosed) {
+        realm.removeListener('change', fetchVehicleInUse)
+      }
     }
   }, [realm, fetchVehicleInUse])
+
+  useEffect(() => {
+    realm.subscriptions.update((mutableSubs, realm) => {
+      const historicByUserQuery = realm
+        .objects('Historic')
+        .filtered(`user_id = '${user?.id}'`)
+
+      mutableSubs.add(historicByUserQuery, { name: 'historic_by_user' })
+    })
+  }, [realm, user])
 
   function handleRegisterMovement() {
     if (!vehicleInUse) {
