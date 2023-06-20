@@ -15,7 +15,7 @@ export function Header({ title }: HeaderProps) {
 
   return (
     <View
-      className="z-10 w-full flex-row justify-between bg-gray-700 px-8 pb-6"
+      className="w-full flex-row justify-between bg-gray-700 px-8 pb-6"
       style={{ paddingTop: top + 42 }}
     >
       <TouchableOpacity activeOpacity={0.7} onPress={goBack}>
