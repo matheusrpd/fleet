@@ -1,17 +1,24 @@
-import { useRef, useState } from 'react'
-import { Alert, ScrollView, TextInput, View } from 'react-native'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Alert, ScrollView, Text, TextInput, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useUser } from '@realm/react'
 import { useNavigation } from '@react-navigation/native'
+import { useForegroundPermissions, LocationObjectCoords } from 'expo-location'
+import { Car } from 'phosphor-react-native'
 
 import { Header } from '../components/Header'
+import { Button } from '../components/Button'
+import { Loading } from '../components/Loading'
+import { LocationInfo } from '../components/LocationInfo'
 import { LicensePlateInput } from '../components/LicensePlateInput'
 import { TextAreaInput } from '../components/TextAreaInput'
-import { Button } from '../components/Button'
+import { Map } from '../components/Map'
 
 import { licensePlateValidade } from '../utils/licensePlateValidate'
 import { useRealm } from '../libs/realm'
 import { Historic } from '../libs/realm/Historic'
+import { useWatchLocation } from '../hooks/useWatchLocation'
+import { getAddressLocation } from '../utils/getAddressLocation'
 
 export function Departure() {
   const { goBack } = useNavigation()
@@ -22,10 +29,47 @@ export function Departure() {
   const [licensePlate, setLicensePlate] = useState('')
   const [description, setDescription] = useState('')
 
+  const [currentAddress, setcurrentAddress] = useState<string | null>(null)
+  const [currentCords, setCurrentCords] = useState<LocationObjectCoords | null>(
+    null,
+  )
+
   const [isRegistering, setIsRegistering] = useState(false)
+  const [isLoadingAddress, setIsLoadingAddress] = useState(true)
+
+  const [locationForegroundPermission, requestLocationForegroundPermission] =
+    useForegroundPermissions()
 
   const realm = useRealm()
   const user = useUser()
+
+  const handleWatchLocation = useCallback(
+    async (location: LocationObjectCoords) => {
+      try {
+        setCurrentCords(location)
+
+        const address = await getAddressLocation(location)
+
+        if (address) {
+          setcurrentAddress(address)
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setIsLoadingAddress(false)
+      }
+    },
+    [],
+  )
+
+  useWatchLocation({
+    permissionGranted: !!locationForegroundPermission?.granted,
+    watchLocation: handleWatchLocation,
+  })
+
+  useEffect(() => {
+    requestLocationForegroundPermission()
+  }, [requestLocationForegroundPermission])
 
   function handleDepartureRegister() {
     try {
@@ -69,13 +113,40 @@ export function Departure() {
     }
   }
 
+  if (isLoadingAddress) {
+    return <Loading />
+  }
+
+  if (!locationForegroundPermission?.granted) {
+    return (
+      <View className="flex-1 bg-gray-800">
+        <Header title="Saída" />
+        <Text className="m-6 text-center font-sans leading-relaxed text-white">
+          Você precisa permitir que o aplicativo tenha acesso a localização para
+          utilizar essa funcionalidade. Por favor acesse as configurações do seu
+          dispositivo para conceder essa permissão ao aplicativo.
+        </Text>
+      </View>
+    )
+  }
+
   return (
     <View className="flex-1 bg-gray-800">
       <Header title="Saída" />
 
       <KeyboardAwareScrollView>
         <ScrollView>
-          <View className="flex-1 p-8 pt-12" style={{ gap: 16 }}>
+          {currentCords ? <Map coordinates={[currentCords]} /> : null}
+
+          <View className="flex-1 p-8" style={{ gap: 16 }}>
+            {currentAddress ? (
+              <LocationInfo
+                icon={Car}
+                label="Localização atual"
+                description={currentAddress}
+              />
+            ) : null}
+
             <LicensePlateInput
               ref={licensePlateRef}
               label="Placa de veículo"

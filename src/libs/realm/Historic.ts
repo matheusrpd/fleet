@@ -1,3 +1,4 @@
+import { ObjectSchema } from 'realm'
 import { Realm } from '@realm/react'
 
 interface GenerateParams {
@@ -28,7 +29,7 @@ export class Historic extends Realm.Object<Historic> {
     }
   }
 
-  static schema = {
+  static schema: ObjectSchema = {
     name: 'Historic',
     primaryKey: '_id',
 
